@@ -4,6 +4,7 @@ import json
 import tqdm
 import random
 import os
+import zipfile
 
 class DataPreprocessingMid():
     def __init__(self,
@@ -13,16 +14,17 @@ class DataPreprocessingMid():
         self.dealing = dealing
 
     def main(self):
-        print('Parsing ' + self.dealing + ' Mid...')
-        re = []
-        with gzip.open(self.root + 'raw/reviews_' + self.dealing + '_5.json.gz', 'rb') as f:
-            for line in tqdm.tqdm(f, smoothing=0, mininterval=1.0):
-                line = json.loads(line)
-                re.append([line['reviewerID'], line['asin'], line['overall']])
-        re = pd.DataFrame(re, columns=['uid', 'iid', 'y'])
-        print(self.dealing + ' Mid Done.')
-        re.to_csv(self.root + 'mid/' + self.dealing + '.csv', index=0)
-        return re
+      print('Parsing ' + self.dealing + ' Mid...')
+      re = []
+      with zipfile.ZipFile(self.root + 'raw/' + self.dealing + '.zip', 'r') as archive:
+          with archive.open(self.dealing + '.json') as f:
+              for line in tqdm.tqdm(f, smoothing=0, mininterval=1.0):
+                  line = json.loads(line)
+                  re.append([line['reviewerID'], line['asin'], line['overall']])
+      re = pd.DataFrame(re, columns=['uid', 'iid', 'y'])
+      print(self.dealing + ' Mid Done.')
+      re.to_csv(self.root + 'mid/' + self.dealing + '.csv', index=0)
+      return re
 
 class DataPreprocessingReady():
     def __init__(self,
